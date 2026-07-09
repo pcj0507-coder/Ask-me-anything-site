@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>뭐든지 대답해주는 마법의 소라고둥</title>
+    <style>
+        /* 기본 리셋 및 폰트 설정 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a0b2e 0%, #3b1b68 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* 메인 컨테이너 (모바일 반응형 중앙 정렬) */
+        .container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* 헤더 / 타이틀 */
+        header {
+            text-align: center;
+            margin-bottom: 10px;
+            margin-top: 20px;
+        }
+        header h1 {
+            font-size: 1.8rem;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            margin-bottom: 5px;
+        }
+        header p {
+            color: #d1b3ff;
+            font-size: 0.9rem;
+        }
+
+        /* 카드 공통 레이아웃 */
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 3대 핵심 조건 안내창 */
+        .rule-card {
+            border-left: 5px solid #ff4757;
+        }
+        .rule-card h2 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: #ff4757;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .rule-card ul {
+            list-style: none;
+            font-size: 0.85rem;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+        .rule-card ul li::before {
+            content: "✨";
+            margin-right: 5px;
+        }
+
+        /* 입력 폼 영역 */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .category-select {
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            outline: none;
+            font-size: 0.9rem;
+        }
+        .category-select option {
+            background: #3b1b68;
+            color: white;
+        }
+        .textarea-wrapper {
+            position: relative;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            resize: none;
+            outline: none;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        textarea:focus {
+            border-color: #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+        .char-counter {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            font-size: 0.75rem;
+            color: #aaa;
+        }
+        .error-msg {
+            color: #ff4757;
+            font-size: 0.85rem;
+            display: none;
+            margin-top: -5px;
+        }
+
+        /* 실행 버튼 */
+        .btn-magic {
+            background: linear-gradient(90deg, #ff007f, #7f00ff);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(127, 0, 255, 0.4);
+        }
+        .btn-magic:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(127, 0, 255, 0.6);
+        }
+
+        /* 결과 영역 */
+        .result-card {
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+        .result-title {
+            font-size: 0.9rem;
+            color: #d1b3ff;
+            margin-bottom: 15px;
+        }
+        /* 결과 텍스트 하이라이트 */
+        .result-highlight {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #00ffcc;
+            text-shadow: 0 0 20px rgba(0, 255, 204, 0.6);
+            margin: 20px 0;
+            word-break: keep-all;
+        }
+
+        /* 상태 배지 */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .badge-study { background: #4facfe; color: #fff; }
+        .badge-love { background: #ff758c; color: #fff; }
+        .badge-daily { background: #43e97b; color: #fff; }
+        .badge-magic { background: #ffd700; color: #000; } /* 이스터에그용 배지 */
+
+        /* 히스토리 (기록 저장) */
+        .history-section {
+            margin-top: 20px;
+        }
+        .history-title {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .history-item {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 12px;
+            border-left: 4px solid #7f00ff;
+        }
+        .history-q {
+            font-size: 0.9rem;
+            color: #ccc;
+            margin-bottom: 8px;
+        }
+        .history-a {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #00ffcc;
+        }
+        .empty-history {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #888;
+            padding: 20px 0;
+        }
+
+        /* 애니메이션 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+        }
+        .shake {
+            animation: shake 0.3s ease-in-out;
+            border-color: #ff4757 !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>🔮 마법의 대답</h1>
+            <p>고민되는 질문을 적어보세요. 마법이 답을 내립니다.</p>
+        </header>
+
+        <div class="card rule-card">
+            <h2>⚠️ 반드시 지켜야 할 규칙 3가지</h2>
+            <ul>
+                <li>질문은 명확하게! 빈칸으로 물어볼 수 없습니다.</li>
+                <li>결과는 단답형으로 나옵니다. 토달지 마세요!</li>
+                <li>결정은 참고용일 뿐, 진짜 선택은 당신의 몫입니다.</li>
+            </ul>
+        </div>
+
+        <div class="card input-card">
+            <div class="input-group">
+                <select id="categorySelect" class="category-select">
+                    <option value="daily">일상/선택 (오늘 뭐 먹지? 등)</option>
+                    <option value="study">학업/진로 (공부할까? 등)</option>
+                    <option value="love">연애/우정 (고백할까? 등)</option>
+                </select>
+                
+                <div class="textarea-wrapper">
+                    <textarea id="questionInput" placeholder="당신의 고민을 구체적으로 적어주세요! (예: 오늘 야자 쨀까요?)" maxlength="50"></textarea>
+                    <span id="charCount" class="char-counter">0 / 50</span>
+                </div>
+                
+                <span id="errorMsg" class="error-msg">질문을 마음속으로만 생각하면 마법이 작동하지 않아요!</span>
+                
+                <button id="magicBtn" class="btn-magic">마법의 대답 듣기 ✨</button>
+            </div>
+        </div>
+
+        <div id="resultCard" class="card result-card">
+            <div class="result-title">마법의 대답은...</div>
+            <div id="resultBadge" class="badge badge-daily">일상/선택</div>
+            <div id="resultText" class="result-highlight">네</div>
+        </div>
+
+        <div class="history-section">
+            <h3 class="history-title">📜 이전 마법 기록</h3>
+            <div id="historyList" class="history-list">
+                <div class="empty-history">아직 질문한 기록이 없습니다.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM 요소 선택
+        const questionInput = document.getElementById('questionInput');
+        const charCount = document.getElementById('charCount');
+        const errorMsg = document.getElementById('errorMsg');
+        const magicBtn = document.getElementById('magicBtn');
+        const resultCard = document.getElementById('resultCard');
+        const resultText = document.getElementById('resultText');
+        const resultBadge = document.getElementById('resultBadge');
+        const categorySelect = document.getElementById('categorySelect');
+        const historyList = document.getElementById('historyList');
+
+        // 단답형 난수 생성 풀 (일반 답변)
+        const normalAnswers = [
+            "네", "아니오", "당장 하세요", "절대 안 돼", 
+            "조금 더 기다려봐", "포기해", "지금이 기회야", "다시 한번 생각해봐",
+            "무조건 고!", "멈추는 게 좋아"
+        ];
+
+        // 히든 이스터에그 답변 풀
+        const easterEggs = [
+            "마법사도 이건 모름 🤷‍♂️", 
+            "오늘은 무조건 네 뜻대로 될 거야! 🌟"
+        ];
+
+        // 상태 배지 매핑
+        const badgeMap = {
+            'study': { text: '학업/진로', class: 'badge-study' },
+            'love': { text: '연애/우정', class: 'badge-love' },
+            'daily': { text: '일상/선택', class: 'badge-daily' },
+            'magic': { text: '이스터에그', class: 'badge-magic' }
+        };
+
+        // 로컬 스토리지 키
+        const STORAGE_KEY = 'magicSiteHistory';
+
+        // 앱 초기화 (기록 불러오기)
+        function init() {
+            renderHistory();
+        }
+
+        // 글자 수 제한 및 카운터 업데이트 이벤트
+        questionInput.addEventListener('input', (e) => {
+            const currentLen = e.target.value.length;
+            charCount.textContent = `${currentLen} / 50`;
+            
+            // 에러 상태 초기화
+            if (currentLen > 0) {
+                questionInput.classList.remove('shake');
+                errorMsg.style.display = 'none';
+            }
+        });
+
+        // 실행 버튼 클릭 이벤트
+        magicBtn.addEventListener('click', () => {
+            const question = questionInput.value.trim();
+            const category = categorySelect.value;
+
+            // 빈칸 원천 차단 로직
+            if (question === "") {
+                questionInput.classList.add('shake');
+                errorMsg.style.display = 'block';
+                
+                // 애니메이션 클래스 제거 (재반복을 위해)
+                setTimeout(() => {
+                    questionInput.classList.remove('shake');
+                }, 300);
+                return; // 함수 종료
+            }
+
+            // 마법의 답변 생성 로직
+            generateAnswer(question, category);
+        });
+
+        // 답변 생성 및 결과 표시 함수
+        function generateAnswer(question, category) {
+            let answer = "";
+            let isEasterEgg = false;
+            
+            // 2% 확률로 히든 이스터에그 답변 발생
+            const rand = Math.random();
+            if (rand < 0.02) {
+                answer = easterEggs[Math.floor(Math.random() * easterEggs.length)];
+                isEasterEgg = true;
+            } else {
+                answer = normalAnswers[Math.floor(Math.random() * normalAnswers.length)];
+            }
+
+            // 결과 화면 UI 업데이트
+            resultCard.style.display = 'block';
+            resultText.textContent = answer;
+            
+            // 배지 업데이트
+            resultBadge.className = 'badge'; // 기본 초기화
+            if (isEasterEgg) {
+                resultBadge.classList.add(badgeMap['magic'].class);
+                resultBadge.textContent = badgeMap['magic'].text;
+                resultText.style.color = '#ffd700'; // 이스터에그 특별 색상
+            } else {
+                resultBadge.classList.add(badgeMap[category].class);
+                resultBadge.textContent = badgeMap[category].text;
+                resultText.style.color = '#00ffcc'; // 기본 결과 색상
+            }
+
+            // 기록 저장 및 렌더링
+            saveHistory(question, answer, isEasterEgg ? 'magic' : category);
+            
+            // 입력창 초기화
+            questionInput.value = "";
+            charCount.textContent = "0 / 50";
+        }
+
+        // 기록 저장 (Local Storage 활용)
+        function saveHistory(question, answer, categoryKey) {
+            const history = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            const newRecord = {
+                id: Date.now(),
+                question: question,
+                answer: answer,
+                categoryKey: categoryKey
+            };
+            
+            // 최신 기록이 위로 오도록 배열 맨 앞에 추가
+            history.unshift(newRecord);
+            
+            // 최대 10개까지만 저장
+            if(history.length > 10) history.pop();
+            
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+            renderHistory();
+        }
+
+        // 기록 화면 렌더링
+        function renderHistory() {
+            const history = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            
+            if (history.length === 0) {
+                historyList.innerHTML = '<div class="empty-history">아직 질문한 기록이 없습니다.</div>';
+                return;
+            }
+
+            historyList.innerHTML = ""; // 기존 목록 초기화
+            
+            history.forEach(item => {
+                const badgeInfo = badgeMap[item.categoryKey];
+                
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <span class="badge ${badgeInfo.class}">${badgeInfo.text}</span>
+                    <div class="history-q">Q. ${item.question}</div>
+                    <div class="history-a">A. ${item.answer}</div>
+                `;
+                historyList.appendChild(historyItem);
+            });
+        }
+
+        // 초기화 실행
+        init();
+    </script>
+</body>
+</html>
